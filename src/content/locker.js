@@ -20,8 +20,35 @@ const EVENT_TYPES = [
   "beforeinput",
 ];
 
+const SHORTCUT_KEY = "k";
+const SHORTCUT_OPTIONS = { capture: true };
+
 let enabled = false;
 let overlay = null;
+
+const isEditableTarget = (target) => {
+  if (!target) return false;
+  if (target.isContentEditable) return true;
+  const tag = target.tagName?.toLowerCase();
+  return tag === "input" || tag === "textarea" || tag === "select";
+};
+
+const isShortcut = (event) => {
+  if (event.isComposing) return false;
+  if (event.key?.toLowerCase() !== SHORTCUT_KEY) return false;
+  if (event.metaKey) {
+    return event.shiftKey && !event.altKey && !event.ctrlKey;
+  }
+  return event.altKey && event.shiftKey && !event.ctrlKey;
+};
+
+const handleShortcut = (event) => {
+  if (!isShortcut(event)) return;
+  if (isEditableTarget(event.target)) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  chrome.runtime.sendMessage({ type: "LOCK_TOGGLE" }).catch(() => {});
+};
 
 const blocker = (event) => {
   if (!enabled) return;
@@ -112,5 +139,7 @@ chrome.runtime.onMessage.addListener((message) => {
   if (message?.type === "LOCK_ENABLE") enable();
   if (message?.type === "LOCK_DISABLE") disable();
 });
+
+window.addEventListener("keydown", handleShortcut, SHORTCUT_OPTIONS);
 
 syncInitialState();

@@ -119,6 +119,21 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
+  if (message?.type === "LOCK_TOGGLE") {
+    const senderWindowId = sender.tab?.windowId ?? null;
+    getState().then(async (state) => {
+      const shouldDisable =
+        state.locked && senderWindowId != null && state.windowId === senderWindowId;
+      if (shouldDisable) {
+        await disableLock();
+      } else {
+        await enableLock(senderWindowId);
+      }
+      sendResponse({ ok: true });
+    });
+    return true;
+  }
+
   if (message?.type === "LOCK_SET") {
     const locked = Boolean(message.locked);
     const targetWindowId = message.windowId;
