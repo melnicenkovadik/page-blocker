@@ -1,0 +1,44 @@
+{
+  "manifest_version": 3,
+  "name": "Page Lock",
+  "version": "0.1.0",
+  "description": "Disable page interactions in the current window.",
+  "action": {
+    "default_title": "Page Lock",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "src/icon-16.svg",
+      "32": "src/icon-32.svg"
+    }
+  },
+  "icons": {
+    "16": "src/icon-16.svg",
+    "32": "src/icon-32.svg",
+    "48": "src/icon-48.svg",
+    "128": "src/icon-128.svg"
+  },
+  "permissions": ["storage", "tabs"],
+  "host_permissions": ["<all_urls>"],
+  "commands": {
+    "toggle-lock": {
+      "suggested_key": {
+        "default": "Alt+Shift+L",
+        "mac": "Command+Shift+L"
+      },
+      "description": "Toggle page lock for the current window."
+    }
+  },
+  "background": {
+    "service_worker": "src/background/index.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "all_frames": true,
+      "match_about_blank": true,
+      "run_at": "document_start",
+      "js": ["src/content/locker.js"]
+    }
+  ]
+}
